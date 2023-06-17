@@ -128,6 +128,9 @@ foreach ($HostRecord in $HostList)
     # }
 }
 
+# get the IP Address of the NAT Network
+$NAT_IP=(Get-WmiObject -Class Win32_NetworkAdapterConfiguration | where {$_.DefaultIPGateway -ne $null}).IPAddress | select-object -first 1
+$NAT_HOSTNAME=hostname
 # add CNAME records for ad, db and oud
 Add-DnsServerResourceRecordCName -Name "ad"  -HostNameAlias "$NAT_HOSTNAME.$domain" -ZoneName $domain
 Add-DnsServerResourceRecordCName -Name "oud" -HostNameAlias "oud12.$domain"  -ZoneName $domain
@@ -139,10 +142,6 @@ Resolve-DnsName -Name www.trivadislabs.com -Server 8.8.8.8
 if ($domain -eq "trivadislabs.com"){
     Add-DnsServerResourceRecordA -Name "www" -ZoneName $domain -AllowUpdateAny -IPv4Address "140.238.172.60" -TimeToLive 01:00:00
 }
-
-# get the IP Address of the NAT Network
-$NAT_IP=(Get-WmiObject -Class Win32_NetworkAdapterConfiguration | where {$_.DefaultIPGateway -ne $null}).IPAddress | select-object -first 1
-$NAT_HOSTNAME=hostname
 
 # get DNS Server Records
 Get-DnsServerResourceRecord -ZoneName $domain -Name $NAT_HOSTNAME
